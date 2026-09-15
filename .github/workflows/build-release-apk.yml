@@ -28,6 +28,9 @@ jobs:
           mkdir -p build-src
           unzip -q project.zip -d build-src
           rm project.zip project.zip.b64
+          # Chaquopy already uses src/main/python by default. The archived
+          # Kotlin DSL sourceSets declaration is not valid with this plugin version.
+          sed -i '46,50d' build-src/app/build.gradle.kts
 
       - name: Set up JDK 17
         uses: actions/setup-java@v5
