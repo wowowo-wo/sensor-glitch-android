@@ -29,17 +29,25 @@ jobs:
           unzip -q project.zip -d build-src
           rm project.zip project.zip.b64
 
-          # Chaquopy already uses src/main/python by default. The archived
-          # Kotlin DSL sourceSets declaration is not valid with this plugin version.
-          sed -i '46,50d' build-src/app/build.gradle.kts
+          # Chaquopy uses src/main/python by default. Remove the old Kotlin DSL
+          # sourceSets/python block independent of line numbers.
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('build-src/app/build.gradle.kts')
+          s = p.read_text()
+          block = '''    sourceSets {\n        getByName("main") {\n            python.srcDir("src/main/python")\n        }\n    }\n'''
+          if block in s:
+              s = s.replace(block, '')
+          else:
+              import re
+              s = re.sub(r'\n\s*sourceSets\s*\{\s*getByName\("main"\)\s*\{\s*python\.srcDir\("src/main/python"\)\s*\}\s*\}\s*', '\n', s, flags=re.S)
+          p.write_text(s)
+          PY
 
-          # Apply a fixed high-contrast dark palette. This prevents Android's
-          # system dark-mode text colors from becoming unreadable on our custom
-          # dark cards, spinners and controls.
+          # Keep dark-mode text readable regardless of device theme.
           cp overrides/themes.xml build-src/app/src/main/res/values/themes.xml
 
-          # Programmatically-created labels do not have XML textColor attributes,
-          # so set explicit high-contrast colors there as well.
+          # Programmatically-created labels also get explicit high-contrast colors.
           python3 - <<'PY'
           from pathlib import Path
           p = Path('build-src/app/src/main/java/com/example/sensorglitchlocal/MainActivity.kt')
@@ -95,7 +103,7 @@ jobs:
           gh release create latest SensorGlitch.apk \
             --target "${GITHUB_SHA}" \
             --title "Sensor Glitch – Latest" \
-            --notes "Dark-mode readability improved. Android local-processing build. Download SensorGlitch.apk and install it on your Android device."
+            --notes "Expanded processing build: regional failure, highlight collapse, smear modes, block corruption, pixel dropout, brutal black crush, optical blur, and expanded presets."
 
       - name: Add direct download link to job summary
         run: |
