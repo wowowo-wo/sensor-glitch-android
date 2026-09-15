@@ -1,0 +1,69 @@
+name: Build and publish Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-release
+  cancel-in-progress: true
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Decode Android project
+        run: |
+          mkdir -p build-src
+          base64 -d project.zip.b64 > project.zip
+          unzip -q project.zip -d build-src
+          rm project.zip
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: sdkmanager "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Set up Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Build debug APK
+        working-directory: build-src
+        run: gradle --no-daemon assembleDebug
+
+      - name: Prepare APK
+        run: |
+          cp build-src/app/build/outputs/apk/debug/app-debug.apk SensorGlitch.apk
+          ls -lh SensorGlitch.apk
+
+      - name: Replace latest GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest --cleanup-tag -y || true
+          gh release create latest SensorGlitch.apk \
+            --target "${GITHUB_SHA}" \
+            --title "Sensor Glitch – Latest" \
+            --notes "Android 用ローカル処理版。APK を Android 端末でダウンロードしてインストールしてください。"
+
+      - name: Add direct download link to job summary
+        run: |
+          echo "## Android APK" >> "$GITHUB_STEP_SUMMARY"
+          echo "[SensorGlitch.apk](https://github.com/${GITHUB_REPOSITORY}/releases/download/latest/SensorGlitch.apk)" >> "$GITHUB_STEP_SUMMARY"
