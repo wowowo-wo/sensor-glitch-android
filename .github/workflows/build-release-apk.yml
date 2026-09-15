@@ -28,9 +28,34 @@ jobs:
           mkdir -p build-src
           unzip -q project.zip -d build-src
           rm project.zip project.zip.b64
+
           # Chaquopy already uses src/main/python by default. The archived
           # Kotlin DSL sourceSets declaration is not valid with this plugin version.
           sed -i '46,50d' build-src/app/build.gradle.kts
+
+          # Apply a fixed high-contrast dark palette. This prevents Android's
+          # system dark-mode text colors from becoming unreadable on our custom
+          # dark cards, spinners and controls.
+          cp overrides/themes.xml build-src/app/src/main/res/values/themes.xml
+
+          # Programmatically-created labels do not have XML textColor attributes,
+          # so set explicit high-contrast colors there as well.
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('build-src/app/src/main/java/com/example/sensorglitchlocal/MainActivity.kt')
+          s = p.read_text()
+          if 'import android.graphics.Color' not in s:
+              s = s.replace('import android.graphics.BitmapFactory\n', 'import android.graphics.BitmapFactory\nimport android.graphics.Color\n')
+          s = s.replace(
+              'textSize = 16f\n            setPadding(0, 20, 0, 8)',
+              'textSize = 16f\n            setTextColor(Color.rgb(247, 248, 252))\n            setPadding(0, 20, 0, 8)'
+          )
+          s = s.replace(
+              'text = "${spec.label}: ${spec.format(spec.default)}"\n        }',
+              'text = "${spec.label}: ${spec.format(spec.default)}"\n            setTextColor(Color.rgb(225, 229, 238))\n            textSize = 14f\n        }'
+          )
+          p.write_text(s)
+          PY
 
       - name: Set up JDK 17
         uses: actions/setup-java@v5
@@ -70,7 +95,7 @@ jobs:
           gh release create latest SensorGlitch.apk \
             --target "${GITHUB_SHA}" \
             --title "Sensor Glitch – Latest" \
-            --notes "Android 用ローカル処理版。APK を Android 端末でダウンロードしてインストールしてください。"
+            --notes "Dark-mode readability improved. Android local-processing build. Download SensorGlitch.apk and install it on your Android device."
 
       - name: Add direct download link to job summary
         run: |
