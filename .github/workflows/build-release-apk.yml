@@ -20,12 +20,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Decode Android project
+      - name: Reconstruct Android project archive
         run: |
-          mkdir -p build-src
+          cat project.part.00 project.part.01 project.part.02 project.part.03 project.part.04 > project.zip.b64
           base64 -d project.zip.b64 > project.zip
+          unzip -t project.zip
+          mkdir -p build-src
           unzip -q project.zip -d build-src
-          rm project.zip
+          rm project.zip project.zip.b64
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
