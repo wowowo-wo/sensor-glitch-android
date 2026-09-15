@@ -1,0 +1,40 @@
+<resources>
+    <style name="Theme.SensorGlitchLocal" parent="Theme.MaterialComponents.NoActionBar">
+        <!-- Fixed high-contrast dark palette. Do not inherit device DayNight text colors. -->
+        <item name="colorPrimary">#D34FFF</item>
+        <item name="colorPrimaryVariant">#8E35C9</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#7CB7FF</item>
+        <item name="colorOnSecondary">#08101C</item>
+
+        <item name="colorSurface">#171B24</item>
+        <item name="colorOnSurface">#F7F8FC</item>
+        <item name="colorBackground">#101218</item>
+        <item name="colorOnBackground">#F7F8FC</item>
+
+        <item name="android:windowBackground">#101218</item>
+        <item name="android:colorBackground">#101218</item>
+        <item name="android:textColorPrimary">#F7F8FC</item>
+        <item name="android:textColorSecondary">#C9D0DC</item>
+        <item name="android:textColorHint">#AEB6C5</item>
+        <item name="android:colorAccent">#D34FFF</item>
+        <item name="android:statusBarColor">#101218</item>
+        <item name="android:navigationBarColor">#101218</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:forceDarkAllowed">false</item>
+
+        <item name="android:spinnerStyle">@style/SensorGlitchSpinner</item>
+        <item name="android:checkboxStyle">@style/SensorGlitchCheckBox</item>
+    </style>
+
+    <style name="SensorGlitchSpinner" parent="Widget.AppCompat.Spinner">
+        <item name="android:backgroundTint">#667086</item>
+        <item name="android:popupBackground">#171B24</item>
+    </style>
+
+    <style name="SensorGlitchCheckBox" parent="Widget.AppCompat.CompoundButton.CheckBox">
+        <item name="android:textColor">#F1F3F8</item>
+        <item name="buttonTint">#D34FFF</item>
+    </style>
+</resources>
